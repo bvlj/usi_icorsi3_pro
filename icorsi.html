@@ -1,0 +1,146 @@
+<script>
+function doForEach(items, f) {
+  if (!items) return;
+  for (let i = 0; i < items.length; i++) { f(items[i]); }
+}
+
+function removeFooter() {
+  doForEach(document.getElementsByTagName("footer"), x => x.outerHTML = "");
+}
+
+function properLogo() {
+  const myLogo = "https://gist.githubusercontent.com/bvlj/b8168049a8088eaa5d313c3a8304cc4e/raw/753521f24932822e7d606da2a5d70b6dfcb0f584/icorsi.svg";
+  doForEach(document.getElementsByClassName("logo"), x => x.src = myLogo);
+  doForEach(document.getElementsByClassName("site-name"), x => x.innerHTML = "<span>i3corsi<sup>pro</sup><span>");
+}
+
+function roomStatus(room) {
+  return new Promise((resolve, _) => {
+    const xhr = new XMLHttpRequest();
+    xhr.addEventListener("load", () => {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(xhr.responseText, "text/html");
+      const lessons = doc.querySelectorAll(
+        "table.rsContentTable div.rsAptSimple"
+      );
+      const parsed = [];
+      for (let lesson of lessons) {
+        const time = lesson.querySelector("span[id$=lblOrario]");
+        const start = new Date();
+        start.setHours(parseInt(time.innerText.substring(1, 3)));
+        start.setMinutes(parseInt(time.innerText.substring(4, 6)));
+        start.setSeconds(0);
+        const end = new Date();
+        end.setHours(parseInt(time.innerText.substring(7, 9)));
+        end.setMinutes(parseInt(time.innerText.substring(10, 12)));
+        end.setSeconds(0);
+
+        parsed.push({
+          title: lesson.getAttribute("title")
+            .replace(/S[AP] \d+-\d+/, '')
+            .replace('(INF)', '')
+            .trim(),
+          start: start,
+          end: end,
+        });
+      }
+
+      let start = new Date();
+      start.setHours(0);
+      start.setMinutes(0);
+      start.setSeconds(0);
+
+      let s = start;
+      let end = new Date();
+      end.setHours(23);
+      end.setMinutes(59);
+      end.setSeconds(0);
+
+      const holes = [];
+      for (let i = 0; i <= parsed.length; i++) {
+        const time = i == parsed.length ? end : parsed[i].start;
+        if (time != end) {
+          s = parsed[i].end;
+        }
+      }
+      parsed.push(...holes);
+      resolve(parsed);
+    });
+
+    // Simple proxy to https://aule.usi.ch/aule/View.aspx?name=
+    xhr.open("GET", `https://soulsbros.ch/steeven/aule.php?name=${room}`);
+    xhr.send();
+  });
+}
+
+function formatTime(date) {
+  const twoDigits = (n) => n < 10 ? "0" + n : n;
+  return twoDigits(date.getHours()) + ":" + twoDigits(date.getMinutes());
+}
+
+function injectUsiRooms() {
+  const rooms = [
+    'D1.15',
+    'D1.14',
+    'C1.03'
+  ];
+  Promise.all(rooms.map(async room => {
+    const lectures = await roomStatus(room);
+    return { room, lectures };
+  })).then(data => {
+    doForEach(document.getElementsByClassName("fpstartwrap"), x => {
+      const table = document.createElement('div');
+      table.className = 'my-rooms-table';
+      data.forEach(it => {
+        const column = document.createElement('div');
+        column.className = 'my-rooms-column';
+        const title = document.createElement('h3');
+        title.innerText = it.room;
+        column.appendChild(title);
+        it.lectures.forEach(l => {
+          const cell = document.createElement('div');
+          cell.innerHTML = `<b>${l.title}</b><br>${formatTime(l.start)} to ${formatTime(l.end)}`;
+          column.appendChild(cell);
+        });
+        table.appendChild(column);
+      });
+      x.innerHTML = '';
+      x.appendChild(table);
+    });
+  });
+}
+
+window.onload = () => {
+  properLogo();
+  removeFooter();
+  injectUsiRooms();
+};
+</script>
+
+<style>
+.my-rooms-table {
+  display: flex;
+  flex-flow: row nowrap;
+  gap: 12px;
+  justify-content: space-between;
+  overflow-x: scroll;
+}
+
+.my-rooms-table .my-rooms-column {
+  display: flex;
+  flex-basis: 100%;
+  flex-flow: column nowrap;
+  gap: 8px;
+  padding: 4px;
+}
+
+::-webkit-scrollbar {
+  background-color: transparent;
+}
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+::-webkit-scrollbar-track-piece {
+  background-color: transparent;
+}
+</style>
