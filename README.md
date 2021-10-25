@@ -8,6 +8,8 @@ Customize iCorsi3:
 
 ## How to install
 
+0. Ensure that "_Editor preferences_ > _Text editor_" in the user preferences
+   is set to "_Plain text_"
 1. From the homepage, click "_Customise this page_"
 2. On the right side, select "_Add block_" and then "_HTML_"
 3. You will find a new block on the right side of the page,
