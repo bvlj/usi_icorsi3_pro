@@ -2,7 +2,7 @@
 
 Customize iCorsi3:
 
-- Remove useless quick links at the top and the footer
+- Remove useless quick links at the top, news and the footer
 - Upgrade logo to show it's the **pro** version of iCorsi
 - [Integration to display courses schedules
 

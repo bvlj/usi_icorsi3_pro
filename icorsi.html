@@ -5,27 +5,34 @@ function doForEach(items, f) {
 }
 
 function removeFooter() {
-  doForEach(document.getElementsByTagName("footer"), x => x.outerHTML = "");
+  doForEach(document.getElementsByTagName('footer'), x => x.outerHTML = '');
+}
+
+function removeNews() {
+  const newsDiv = document.getElementById('messagesbyinstitution');
+  if (newsDiv) {
+      newsDiv.outerHTML = '';
+  }
 }
 
 function properLogo() {
-  const myLogo = "https://github.com/bvlj/usi_icorsi3_pro/raw/main/logo.svg";
-  doForEach(document.getElementsByClassName("logo"), x => x.src = myLogo);
-  doForEach(document.getElementsByClassName("site-name"), x => x.innerHTML = "<span>i3corsi<sup>pro</sup><span>");
+  const myLogo = 'https://github.com/bvlj/usi_icorsi3_pro/raw/main/logo.svg';
+  doForEach(document.getElementsByClassName('logo'), x => x.src = myLogo);
+  doForEach(document.getElementsByClassName('site-name'), x => x.innerHTML = '<span>i3corsi<sup>pro</sup><span>');
 }
 
 function roomStatus(room) {
   return new Promise((resolve, _) => {
     const xhr = new XMLHttpRequest();
-    xhr.addEventListener("load", () => {
+    xhr.addEventListener('load', () => {
       const parser = new DOMParser();
-      const doc = parser.parseFromString(xhr.responseText, "text/html");
+      const doc = parser.parseFromString(xhr.responseText, 'text/html');
       const lessons = doc.querySelectorAll(
-        "table.rsContentTable div.rsAptSimple"
+        'table.rsContentTable div.rsAptSimple'
       );
       const parsed = [];
       for (let lesson of lessons) {
-        const time = lesson.querySelector("span[id$=lblOrario]");
+        const time = lesson.querySelector('span[id$=lblOrario]');
         const start = new Date();
         start.setHours(parseInt(time.innerText.substring(1, 3)));
         start.setMinutes(parseInt(time.innerText.substring(4, 6)));
@@ -36,7 +43,7 @@ function roomStatus(room) {
         end.setSeconds(0);
 
         parsed.push({
-          title: lesson.getAttribute("title")
+          title: lesson.getAttribute('title')
             .replace(/S[AP] \d+-\d+/, '')
             .replace('(INF)', '')
             .trim(),
@@ -48,14 +55,14 @@ function roomStatus(room) {
     });
 
     // Simple proxy to https://aule.usi.ch/aule/View.aspx?name=
-    xhr.open("GET", `https://soulsbros.ch/steeven/aule.php?name=${room}`);
+    xhr.open('GET', `https://soulsbros.ch/steeven/aule.php?name=${room}`);
     xhr.send();
   });
 }
 
 function formatTime(date) {
-  const twoDigits = (n) => n < 10 ? "0" + n : n;
-  return twoDigits(date.getHours()) + ":" + twoDigits(date.getMinutes());
+  const twoDigits = (n) => n < 10 ? '0' + n : n;
+  return twoDigits(date.getHours()) + ':' + twoDigits(date.getMinutes());
 }
 
 function injectUsiSchedule() {
@@ -86,7 +93,7 @@ function injectUsiSchedule() {
         return { name, lecturers, location, time };
       })
       .sort((a, b) => a.time.start.getTime() - b.time.end.getTime()))
-    .then(data => doForEach(document.getElementsByClassName("fpstartwrap"), x => {
+    .then(data => doForEach(document.getElementsByClassName('fpstartwrap'), x => {
       const table = document.createElement('div');
       table.className = 'my-schedule-table';
       data.forEach((it, i) => {
@@ -114,6 +121,7 @@ function injectUsiSchedule() {
 window.onload = () => {
   properLogo();
   removeFooter();
+  removeNews();
   injectUsiSchedule();
 };
 </script>
