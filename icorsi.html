@@ -9,7 +9,7 @@ function removeFooter() {
 }
 
 function properLogo() {
-  const myLogo = "https://gist.githubusercontent.com/bvlj/b8168049a8088eaa5d313c3a8304cc4e/raw/753521f24932822e7d606da2a5d70b6dfcb0f584/icorsi.svg";
+  const myLogo = "https://github.com/bvlj/usi_icorsi3_pro/raw/main/logo.svg";
   doForEach(document.getElementsByClassName("logo"), x => x.src = myLogo);
   doForEach(document.getElementsByClassName("site-name"), x => x.innerHTML = "<span>i3corsi<sup>pro</sup><span>");
 }
@@ -44,26 +44,6 @@ function roomStatus(room) {
           end: end,
         });
       }
-
-      let start = new Date();
-      start.setHours(0);
-      start.setMinutes(0);
-      start.setSeconds(0);
-
-      let s = start;
-      let end = new Date();
-      end.setHours(23);
-      end.setMinutes(59);
-      end.setSeconds(0);
-
-      const holes = [];
-      for (let i = 0; i <= parsed.length; i++) {
-        const time = i == parsed.length ? end : parsed[i].start;
-        if (time != end) {
-          s = parsed[i].end;
-        }
-      }
-      parsed.push(...holes);
       resolve(parsed);
     });
 
@@ -78,59 +58,79 @@ function formatTime(date) {
   return twoDigits(date.getHours()) + ":" + twoDigits(date.getMinutes());
 }
 
-function injectUsiRooms() {
-  const rooms = [
-    'D1.15',
-    'D1.14',
-    'C1.03'
-  ];
-  Promise.all(rooms.map(async room => {
-    const lectures = await roomStatus(room);
-    return { room, lectures };
-  })).then(data => {
-    doForEach(document.getElementsByClassName("fpstartwrap"), x => {
+function injectUsiSchedule() {
+  const study_plan = '59';  // msde
+  const semester = '51';    // SA2021
+  const study_year = '1';   // 1st year
+  const now = new Date();
+  fetch(`https://soulsbros.ch/proxy/schedule.php?studyPlan=${study_plan}&semester=${semester}&studyYear=${study_year}`)
+    .then(res => res.json())
+    .then(res => res.data)
+    .then(courses => courses.filter(course => {
+        const when = new Date(course.start);
+        return when.getFullYear() === now.getFullYear()
+            && when.getMonth() === now.getMonth()
+            && when.getDate() === now.getDate();
+      }).map(course => {
+        const info = course.course;
+        const name = info['name_en'] || info['name_it'];
+        const lecturers = info.lecturers.data
+          .map(x => x.person)
+          .map(x => `${x.last_name} ${x.first_name}`)
+          .join(', ');
+        const location = course.place.office;
+        const time = {
+          start: new Date(course.start),
+          end: new Date(course.end),
+        };
+        return { name, lecturers, location, time };
+      })
+      .sort((a, b) => a.time.start.getTime() - b.time.end.getTime()))
+    .then(data => doForEach(document.getElementsByClassName("fpstartwrap"), x => {
       const table = document.createElement('div');
-      table.className = 'my-rooms-table';
-      data.forEach(it => {
+      table.className = 'my-schedule-table';
+      data.forEach((it, i) => {
         const column = document.createElement('div');
-        column.className = 'my-rooms-column';
-        const title = document.createElement('h3');
-        title.innerText = it.room;
+        column.className = 'my-schedule-column';
+        const title = document.createElement('h4');
+        title.innerText = `${i + 1}: ${it.name}`;
         column.appendChild(title);
-        it.lectures.forEach(l => {
-          const cell = document.createElement('div');
-          cell.innerHTML = `<b>${l.title}</b><br>${formatTime(l.start)} to ${formatTime(l.end)}`;
-          column.appendChild(cell);
-        });
+        const info = document.createElement('div');
+        info.innerHTML = `${it.lecturers}<br>
+                          <b>${it.location}</b>\t
+                          From ${formatTime(it.time.start)}
+                          to ${formatTime(it.time.end)}`;
+        column.appendChild(info);
         table.appendChild(column);
       });
       x.innerHTML = '';
+      const scheduleTitle = document.createElement('h3');
+      scheduleTitle.innerText = 'Schedule for today';
+      x.appendChild(scheduleTitle);
       x.appendChild(table);
-    });
-  });
+    }));
 }
 
 window.onload = () => {
   properLogo();
   removeFooter();
-  injectUsiRooms();
+  injectUsiSchedule();
 };
 </script>
 
 <style>
-.my-rooms-table {
+.my-schedule-table {
   display: flex;
-  flex-flow: row nowrap;
+  flex-flow: row wrap;
+  flex-basis: 50%;
   gap: 12px;
   justify-content: space-between;
-  overflow-x: scroll;
 }
 
-.my-rooms-table .my-rooms-column {
+.my-schedule-table .my-schedule-column {
   display: flex;
   flex-basis: 100%;
   flex-flow: column nowrap;
-  gap: 8px;
   padding: 4px;
 }
 

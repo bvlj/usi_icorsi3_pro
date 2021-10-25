@@ -4,7 +4,7 @@ Customize iCorsi3:
 
 - Remove useless quick links at the top and the footer
 - Upgrade logo to show it's the **pro** version of iCorsi
-- [USIRooms](https://usirooms.xyz) integration to display room schedules
+- [Integration to display courses schedules
 
 ## How to install
 
