@@ -1,7 +1,10 @@
 <script>
 function doForEach(items, f) {
-  if (!items) return;
-  for (let i = 0; i < items.length; i++) { f(items[i]); }
+  if (items && f) {
+    for (let i = 0; i < items.length; i++) {
+      f(items[i]);
+    }
+  }
 }
 
 function removeFooter() {
@@ -15,49 +18,9 @@ function removeNews() {
   }
 }
 
-function properLogo() {
-  const myLogo = 'https://github.com/bvlj/usi_icorsi3_pro/raw/main/logo.svg';
-  doForEach(document.getElementsByClassName('logo'), x => x.src = myLogo);
+function properLogo(config) {
+  doForEach(document.getElementsByClassName('logo'), x => x.src = config.logo);
   doForEach(document.getElementsByClassName('site-name'), x => x.innerHTML = '<span>i3corsi<sup>pro</sup><span>');
-}
-
-function roomStatus(room) {
-  return new Promise((resolve, _) => {
-    const xhr = new XMLHttpRequest();
-    xhr.addEventListener('load', () => {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(xhr.responseText, 'text/html');
-      const lessons = doc.querySelectorAll(
-        'table.rsContentTable div.rsAptSimple'
-      );
-      const parsed = [];
-      for (let lesson of lessons) {
-        const time = lesson.querySelector('span[id$=lblOrario]');
-        const start = new Date();
-        start.setHours(parseInt(time.innerText.substring(1, 3)));
-        start.setMinutes(parseInt(time.innerText.substring(4, 6)));
-        start.setSeconds(0);
-        const end = new Date();
-        end.setHours(parseInt(time.innerText.substring(7, 9)));
-        end.setMinutes(parseInt(time.innerText.substring(10, 12)));
-        end.setSeconds(0);
-
-        parsed.push({
-          title: lesson.getAttribute('title')
-            .replace(/S[AP] \d+-\d+/, '')
-            .replace('(INF)', '')
-            .trim(),
-          start: start,
-          end: end,
-        });
-      }
-      resolve(parsed);
-    });
-
-    // Simple proxy to https://aule.usi.ch/aule/View.aspx?name=
-    xhr.open('GET', `https://soulsbros.ch/steeven/aule.php?name=${room}`);
-    xhr.send();
-  });
 }
 
 function formatTime(date) {
@@ -65,20 +28,29 @@ function formatTime(date) {
   return twoDigits(date.getHours()) + ':' + twoDigits(date.getMinutes());
 }
 
-function injectUsiSchedule() {
-  const study_plan = '59';  // msde
-  const semester = '51';    // SA2021
-  const study_year = '1';   // 1st year
-  const now = new Date();
-  fetch(`https://soulsbros.ch/proxy/schedule.php?studyPlan=${study_plan}&semester=${semester}&studyYear=${study_year}`)
+function injectUsiSchedule(config) {
+  // Cache 'now' values
+  let now = new Date();
+  now = {
+    time: now.getTime(),
+    year: now.getFullYear(),
+    month: now.getMonth(),
+    day: now.getDate(),
+  };
+
+  // Fetch schedule through the API wrapper to bypass CORS
+  fetch(`https://soulsbros.ch/proxy/schedule.php?studyPlan=${config.studyPlan}&semester=${config.semester}&studyYear=${config.studyYear}`)
     .then(res => res.json())
     .then(res => res.data)
     .then(courses => courses.filter(course => {
-        const when = new Date(course.start);
-        return when.getFullYear() === now.getFullYear()
-            && when.getMonth() === now.getMonth()
-            && when.getDate() === now.getDate();
+        // filter today's courses that haven't ended yet
+        const when = new Date(course.end);
+        return when.getTime() > now.time
+            && when.getFullYear() === now.year
+            && when.getMonth() === now.month
+            && when.getDate() === now.day;
       }).map(course => {
+        // Map to proper data structure
         const info = course.course;
         const name = info['name_en'] || info['name_it'];
         const lecturers = info.lecturers.data
@@ -92,37 +64,49 @@ function injectUsiSchedule() {
         };
         return { name, lecturers, location, time };
       })
-      .sort((a, b) => a.time.start.getTime() - b.time.end.getTime()))
-    .then(data => doForEach(document.getElementsByClassName('fpstartwrap'), x => {
+      .sort((a, b) => a.time.end.getTime() - b.time.end.getTime())
+    ).then(data => doForEach(document.getElementsByClassName('fpstartwrap'), x => {
       const table = document.createElement('div');
       table.className = 'my-schedule-table';
-      data.forEach((it, i) => {
-        const column = document.createElement('div');
-        column.className = 'my-schedule-column';
-        const title = document.createElement('h4');
-        title.innerText = `${i + 1}: ${it.name}`;
-        column.appendChild(title);
-        const info = document.createElement('div');
-        info.innerHTML = `${it.lecturers}<br>
-                          <b>${it.location}</b>\t
-                          From ${formatTime(it.time.start)}
-                          to ${formatTime(it.time.end)}`;
-        column.appendChild(info);
-        table.appendChild(column);
-      });
+      if (data.length === 0) {
+        table.innerHTML = '<p>All done for today!</p>';
+      } else {
+        data.forEach((it, i) => {
+          const column = document.createElement('div');
+          column.className = 'my-schedule-column';
+          const title = document.createElement('h4');
+          title.innerText = `${i + 1}: ${it.name}`;
+          column.appendChild(title);
+          const info = document.createElement('div');
+          info.innerHTML = `<p>${it.lecturers}<br>
+                            <b>${it.location}</b>\t
+                            From ${formatTime(it.time.start)}
+                            to ${formatTime(it.time.end)}</p>`;
+          column.appendChild(info);
+          table.appendChild(column);
+        });
+      }
+      // Clear header contents
       x.innerHTML = '';
       const scheduleTitle = document.createElement('h3');
       scheduleTitle.innerText = 'Schedule for today';
       x.appendChild(scheduleTitle);
+      // Inject schedule
       x.appendChild(table);
     }));
 }
 
 window.onload = () => {
-  properLogo();
+  const config = {
+    logo: 'https://github.com/bvlj/usi_icorsi3_pro/raw/main/logo.svg',
+    studyPlan: '59',  // msde
+    semester: '51',   // SA2021
+    studyYear: '1',   // 1st year
+  };
+  properLogo(config);
   removeFooter();
   removeNews();
-  injectUsiSchedule();
+  injectUsiSchedule(config);
 };
 </script>
 
@@ -130,9 +114,7 @@ window.onload = () => {
 .my-schedule-table {
   display: flex;
   flex-flow: row wrap;
-  flex-basis: 50%;
   gap: 12px;
-  justify-content: space-between;
 }
 
 .my-schedule-table .my-schedule-column {
