@@ -28,6 +28,26 @@ function formatTime(date) {
   return twoDigits(date.getHours()) + ':' + twoDigits(date.getMinutes());
 }
 
+function fetchSchedule(config) {
+  const localStorage = window.localStorage;
+  const lastUpdate = localStorage.getItem('pro_schedule_date');
+  const cached = localStorage.getItem('pro_schedule');
+  if (cached && new Date().getTime() - new Date(lastUpdate).getTime() < 259200000) {
+    return new Promise((resolve, reject) => {
+      resolve(JSON.parse(cached));
+    });
+  } else {
+    return fetch(`https://soulsbros.ch/proxy/schedule.php?studyPlan=${config.studyPlan}&semester=${config.semester}&studyYear=${config.studyYear}`)
+      .then(res => res.json())
+      .then(res => res.data)
+      .then(data => {
+        localStorage.setItem('pro_schedule_date', new Date().toString());
+        localStorage.setItem('pro_schedule', JSON.stringify(data));
+        return data;
+      });
+  }
+}
+
 function injectUsiSchedule(config) {
   // Cache 'now' values
   let now = new Date();
@@ -39,9 +59,7 @@ function injectUsiSchedule(config) {
   };
 
   // Fetch schedule through the API wrapper to bypass CORS
-  fetch(`https://soulsbros.ch/proxy/schedule.php?studyPlan=${config.studyPlan}&semester=${config.semester}&studyYear=${config.studyYear}`)
-    .then(res => res.json())
-    .then(res => res.data)
+  fetchSchedule(config)
     .then(courses => courses.filter(course => {
         // filter today's courses that haven't ended yet
         const when = new Date(course.end);
