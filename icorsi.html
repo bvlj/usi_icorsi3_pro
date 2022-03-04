@@ -48,25 +48,20 @@ function fetchSchedule(config) {
   }
 }
 
-function injectUsiSchedule(config) {
-  // Cache 'now' values
-  let now = new Date();
-  now = {
-    time: now.getTime(),
-    year: now.getFullYear(),
-    month: now.getMonth(),
-    day: now.getDate(),
-  };
-
-  // Fetch schedule through the API wrapper to bypass CORS
-  fetchSchedule(config)
-    .then(courses => courses.filter(course => {
-        // filter today's courses that haven't ended yet
+function getSchedule(config, date, allOfDay) {
+  return fetchSchedule(config)
+      .then(courses => courses.filter(course => {
         const when = new Date(course.end);
-        return when.getTime() > now.time
-            && when.getFullYear() === now.year
-            && when.getMonth() === now.month
-            && when.getDate() === now.day;
+        const sameDay = when.getFullYear() === date.getFullYear()
+              && when.getMonth() === date.getMonth()
+              && when.getDate() === date.getDate();
+        if (allOfDay) {
+          // all courses of given date
+          return sameDay;
+        } else {
+          // filter today's courses that haven't ended yet
+          return sameDay && when.getTime() > date.getTime();
+        }
       }).map(course => {
         // Map to proper data structure
         const info = course.course;
@@ -82,8 +77,17 @@ function injectUsiSchedule(config) {
         };
         return { name, lecturers, location, time };
       })
-      .sort((a, b) => a.time.end.getTime() - b.time.end.getTime())
-    ).then(data => doForEach(document.getElementsByClassName('fpstartwrap'), x => {
+      .sort((a, b) => a.time.end.getTime() - b.time.end.getTime()));
+}
+
+function injectUsiSchedule(config, date) {
+  const now = new Date();
+  const diff = (now - date) + ((date.getTimezoneOffset() - now.getTimezoneOffset()) * 60 * 1000);
+  const isToday = Math.floor(diff / 86400000) === 0;
+
+  // Fetch schedule through the API wrapper to bypass CORS
+  getSchedule(config, date, !isToday)
+    .then(data => doForEach(document.getElementsByClassName('fpstartwrap'), x => {
       const table = document.createElement('div');
       table.className = 'my-schedule-table';
       if (data.length === 0) {
@@ -104,13 +108,36 @@ function injectUsiSchedule(config) {
           table.appendChild(column);
         });
       }
-      // Clear header contents
-      x.innerHTML = '';
+      // Insert header contents
+      x.innerHTML = `
+        <div style="display: flex; justify-content: space-between;">
+          <button id="pro_schedule_previous" class="btn btn-secondary">&lt;</button>
+          <button id="pro_schedule_next" class="btn btn-secondary">&gt;</button>
+        </div>`;
       const scheduleTitle = document.createElement('h3');
-      scheduleTitle.innerText = 'Schedule for today';
+      scheduleTitle.innerText = isToday
+        ? 'Schedule for today'
+        : `Schedule for ${date.toISOString().split('T')[0]}`;
+      scheduleTitle.style['text-align'] = 'center';
       x.appendChild(scheduleTitle);
       // Inject schedule
       x.appendChild(table);
+
+      // Buttons
+      const nextDay = document.getElementById('pro_schedule_next');
+      nextDay.onclick = (e) => {
+        e.preventDefault();
+        const d = new Date();
+        d.setDate(date.getDate() + 1);
+        injectUsiSchedule(config, d);
+      };
+      const previousDay = document.getElementById('pro_schedule_previous');
+      previousDay.onclick = (e) => {
+        e.preventDefault();
+        const d = new Date();
+        d.setDate(date.getDate() - 1);
+        injectUsiSchedule(config, d);
+      };
     }));
 }
 
@@ -124,7 +151,7 @@ window.onload = () => {
   properLogo(config);
   removeFooter();
   removeNews();
-  injectUsiSchedule(config);
+  injectUsiSchedule(config, new Date());
 };
 </script>
 
