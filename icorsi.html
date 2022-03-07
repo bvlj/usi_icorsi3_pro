@@ -112,14 +112,13 @@ function injectUsiSchedule(config, date) {
       x.innerHTML = `
         <div style="display: flex; justify-content: space-between;">
           <button id="pro_schedule_previous" class="btn btn-secondary">&lt;</button>
+          <h3 id="pro_schedule_title" style="margin-bottom: 0px"></h3>
           <button id="pro_schedule_next" class="btn btn-secondary">&gt;</button>
         </div>`;
-      const scheduleTitle = document.createElement('h3');
+      const scheduleTitle = document.getElementById('pro_schedule_title');
       scheduleTitle.innerText = isToday
         ? 'Schedule for today'
         : `Schedule for ${date.toISOString().split('T')[0]}`;
-      scheduleTitle.style['text-align'] = 'center';
-      x.appendChild(scheduleTitle);
       // Inject schedule
       x.appendChild(table);
 
