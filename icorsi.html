@@ -32,7 +32,7 @@ function fetchSchedule(config) {
   const localStorage = window.localStorage;
   const lastUpdate = localStorage.getItem('pro_schedule_date');
   const cached = localStorage.getItem('pro_schedule');
-  if (cached && new Date().getTime() - new Date(lastUpdate).getTime() < 259200000) {
+  if (cached && new Date().getTime() - new Date(lastUpdate).getTime() < 518400000) {
     return new Promise((resolve, reject) => {
       resolve(JSON.parse(cached));
     });
@@ -112,7 +112,7 @@ function injectUsiSchedule(config, date) {
       x.innerHTML = `
         <div style="display: flex; justify-content: space-between;">
           <button id="pro_schedule_previous" class="btn btn-secondary">&lt;</button>
-          <h3 id="pro_schedule_title" style="margin-bottom: 0px"></h3>
+          <h3 id="pro_schedule_title" style="text-align: center"></h3>
           <button id="pro_schedule_next" class="btn btn-secondary">&gt;</button>
         </div>`;
       const scheduleTitle = document.getElementById('pro_schedule_title');
@@ -126,16 +126,12 @@ function injectUsiSchedule(config, date) {
       const nextDay = document.getElementById('pro_schedule_next');
       nextDay.onclick = (e) => {
         e.preventDefault();
-        const d = new Date();
-        d.setDate(date.getDate() + 1);
-        injectUsiSchedule(config, d);
+        injectUsiSchedule(config, new Date(date.getTime() + 1000 * 60 * 60 * 24));
       };
       const previousDay = document.getElementById('pro_schedule_previous');
       previousDay.onclick = (e) => {
         e.preventDefault();
-        const d = new Date();
-        d.setDate(date.getDate() - 1);
-        injectUsiSchedule(config, d);
+        injectUsiSchedule(config, new Date(date.getTime() - 1000 * 60 * 60 * 24));
       };
     }));
 }
