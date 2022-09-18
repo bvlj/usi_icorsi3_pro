@@ -1,4 +1,14 @@
 <script>
+// Change the values below based on your year and program.
+// Get the values from USI's schedule URL, for example:
+// https://search.usi.ch/en/educations/AAA/.../schedules/BBB/CCC
+const config = {
+  logo: 'https://github.com/bvlj/usi_icorsi3_pro/raw/main/logo.svg',
+  studyPlan: '59',  // AAA
+  semester: '53',   // BBB
+  studyYear: '2',   // CCC
+};
+
 function doForEach(items, f) {
   if (items && f) {
     for (let i = 0; i < items.length; i++) {
@@ -137,12 +147,6 @@ function injectUsiSchedule(config, date) {
 }
 
 window.onload = () => {
-  const config = {
-    logo: 'https://github.com/bvlj/usi_icorsi3_pro/raw/main/logo.svg',
-    studyPlan: '59',  // msde
-    semester: '53',   // SA2022
-    studyYear: '2',   // 2nd year
-  };
   properLogo(config);
   removeFooter();
   removeNews();

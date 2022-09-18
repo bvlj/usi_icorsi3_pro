@@ -16,7 +16,7 @@ Customize iCorsi3:
    probably called "_(new HTML block)_", click on the gear icon
    and select "_Configure (new HTML block)_"
 4. Paste the content of [icorsi.html](./icorsi.html) into the "_Content_"
-   text field
+   text field and ajust the config as explained in the file
 5. Click "_Save changes_"
 6. Click "_Stop customising this page_" once you're back in the main page
 
