@@ -33,6 +33,29 @@ function properLogo(config) {
   doForEach(document.getElementsByClassName('site-name'), x => x.innerHTML = '<span>i3corsi<sup>pro</sup><span>');
 }
 
+function boldTitles() {
+  const courseListNameLinks = document.querySelectorAll('.coursename');
+  const activitiesNameSpans = document.querySelectorAll('[data-region="event-list-content"] div div [data-region="paged-content-page"] div div div div .text-muted');
+
+  const courseWithActivities = [];
+  doForEach(activitiesNameSpans, spanElem => courseWithActivities.push(spanElem.textContent));
+
+  doForEach(courseListNameLinks, aElem => {
+    const children = aElem.childNodes;
+    let courseName = '';
+    for (let i = 0; i < children.length; i++) {
+      if (children[i].nodeType === 3) {
+        courseName = children[i].wholeText.trim();
+      }
+    }
+
+    if (courseWithActivities.indexOf(courseName) >= 0) {
+      aElem.style.fontWeight = 'bold';
+    }
+  })
+
+}
+
 function formatTime(date) {
   const twoDigits = (n) => n < 10 ? '0' + n : n;
   return twoDigits(date.getHours()) + ':' + twoDigits(date.getMinutes());
@@ -151,6 +174,11 @@ window.onload = () => {
   removeFooter();
   removeNews();
   injectUsiSchedule(config, new Date());
+  
+  setTimeout(() => {
+  // Incoming activities are loaded asynchronously
+  boldTitles();
+  }, 1000);
 };
 </script>
 
