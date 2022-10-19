@@ -9,6 +9,21 @@ const config = {
   studyYear: '2',   // CCC
 };
 
+const interval = setInterval(() => {
+  const cantoni = ["Modulo per lanciare", "Form to launch"]
+    .flatMap(e => [...document.querySelectorAll(`[data-region="event-list-content"] .d-flex a[title^='${e}']`)]);
+  if (cantoni.length > 0) {
+    clearInterval(interval);
+  }
+  cantoni.forEach(e => e.parentNode.parentNode.parentNode.remove());
+
+  const cantoniTime = [...document.querySelectorAll(".pl-0.list-group.list-group-flush")];
+  cantoniTime.filter(e => !e.firstElementChild).filter(e => e.previousElementSibling.nodeName === "H5").forEach(e => {
+    e.previousElementSibling.remove();
+    e.remove();
+  });
+}, 100); 
+  
 function doForEach(items, f) {
   if (items && f) {
     for (let i = 0; i < items.length; i++) {
