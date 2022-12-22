@@ -9,7 +9,7 @@ const config = {
   studyYear: '2',   // CCC
   // Do not touch below here
   repo: 'https://github.com/bvlj/usi_icorsi3_pro',
-  currentVersion: "v1.0.0",
+  currentVersion: "v1.0.1",
 };
 
 function doForEach(items, f) {
@@ -181,7 +181,7 @@ function checkUpdates() {
       const latestVersion = res[0].tag_name;
       console.log(`current: ${config.currentVersion} - latest: ${latestVersion}`)
 
-      if (!config.currentVersion.equals(latestVersion)) {
+      if (config.currentVersion != latestVersion) {
         document.getElementById("user-notifications").innerHTML = 
           `New version available (${latestVersion}), visit <a href='${config.repo}'>${config.repo}</a> to download it!`;
       }
