@@ -1,12 +1,15 @@
 <script>
-// Change the values below based on your year and program.
+// Change the 3 values below based on your year and program.
 // Get the values from USI's schedule URL, for example:
 // https://search.usi.ch/en/educations/AAA/.../schedules/BBB/CCC
 const config = {
-  logo: 'https://github.com/bvlj/usi_icorsi3_pro/raw/main/logo.svg',
+  // EDIT HERE
   studyPlan: '59',  // AAA
   semester: '53',   // BBB
   studyYear: '2',   // CCC
+  // Do not touch below here
+  repo: 'https://github.com/bvlj/usi_icorsi3_pro',
+  currentVersion: "v1.0.0",
 };
 
 function doForEach(items, f) {
@@ -29,7 +32,7 @@ function removeNews() {
 }
 
 function properLogo(config) {
-  doForEach(document.getElementsByClassName('logo'), x => x.src = config.logo);
+  doForEach(document.getElementsByClassName('logo'), x => x.src = `${config.repo}/raw/main/logo.svg`);
   doForEach(document.getElementsByClassName('site-name'), x => x.innerHTML = '<span>iCorsi3<sup>pro</sup><span>');
 }
 
@@ -169,11 +172,28 @@ function injectUsiSchedule(config, date) {
     }));
 }
 
+function checkUpdates() {
+  const repoShort = `${config.repo.split("/")[3]}/${config.repo.split("/")[4]}`;
+
+  fetch(`https://api.github.com/repos/${repoShort}/releases`)
+    .then(res => res.json())
+    .then(res => {
+      const latestVersion = res[0].tag_name;
+      console.log(`current: ${config.currentVersion} - latest: ${latestVersion}`)
+
+      if (!config.currentVersion.equals(latestVersion)) {
+        document.getElementById("user-notifications").innerHTML = 
+          `New version available (${latestVersion}), visit <a href='${config.repo}'>${config.repo}</a> to download it!`;
+      }
+    })
+}
+
 window.onload = () => {
   properLogo(config);
   removeFooter();
   removeNews();
   injectUsiSchedule(config, new Date());
+  checkUpdates();
   
   setTimeout(() => {
   // Incoming activities are loaded asynchronously

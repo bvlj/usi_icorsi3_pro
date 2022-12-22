@@ -1,4 +1,4 @@
-# i3Corsi<sup>pro</sup>
+# iCorsi3<sup>pro</sup>
 
 Customize iCorsi3:
 
@@ -6,6 +6,7 @@ Customize iCorsi3:
 - Upgrade logo to show it's the **pro** version of iCorsi3
 - Replace useless quick links at the top with today's courses schedules
 - Highlight courses for which there is an upcoming activity
+- Automatically checks for new `iCorsi3pro` updates
 
 ## How to install
 
@@ -17,7 +18,7 @@ Customize iCorsi3:
    probably called "_(new HTML block)_", click on the gear icon
    and select "_Configure (new HTML block)_"
 4. Paste the content of [icorsi.html](./icorsi.html) into the "_Content_"
-   text field and ajust the config as explained in the file
+   text field and **adjust the config** as explained in the first lines of the file
 5. Click "_Save changes_"
 6. Click "_Stop customising this page_" once you're back in the main page
 
