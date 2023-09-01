@@ -1,96 +1,96 @@
 <script>
-// Change the 3 values below based on your year and program.
-// Get the values from USI's schedule URL, for example:
-// https://search.usi.ch/en/educations/AAA/.../schedules/BBB/CCC
-const config = {
-  // EDIT HERE
-  studyPlan: '59',  // AAA
-  semester: '53',   // BBB
-  studyYear: '2',   // CCC
-  // Do not touch below here
-  repo: 'https://github.com/bvlj/usi_icorsi3_pro',
-  currentVersion: "v1.0.1",
-};
+  // Change the 3 values below based on your year and program.
+  // Get the values from USI's schedule URL, for example:
+  // https://search.usi.ch/en/educations/AAA/.../schedules/BBB/CCC
+  const config = {
+    // EDIT HERE
+    studyPlan: '33',  // AAA
+    semester: '54',   // BBB
+    studyYear: '1',   // CCC
+    // Do not touch below here
+    repo: 'https://github.com/bvlj/usi_icorsi3_pro',
+    currentVersion: "2.0.0",
+  };
 
-function doForEach(items, f) {
-  if (items && f) {
-    for (let i = 0; i < items.length; i++) {
-      f(items[i]);
-    }
-  }
-}
-
-function removeFooter() {
-  doForEach(document.getElementsByTagName('footer'), x => x.outerHTML = '');
-}
-
-function removeNews() {
-  const newsDiv = document.getElementById('messagesbyinstitution');
-  if (newsDiv) {
-      newsDiv.outerHTML = '';
-  }
-}
-
-function properLogo(config) {
-  doForEach(document.getElementsByClassName('logo'), x => x.src = `${config.repo}/raw/main/logo.svg`);
-  doForEach(document.getElementsByClassName('site-name'), x => x.innerHTML = '<span>iCorsi3<sup>pro</sup><span>');
-}
-
-function boldTitles() {
-  const courseListNameLinks = document.querySelectorAll('.coursename');
-  const activitiesNameSpans = document.querySelectorAll('[data-region="event-list-content"] div div [data-region="paged-content-page"] div div div div .text-muted');
-
-  const courseWithActivities = [];
-  doForEach(activitiesNameSpans, spanElem => courseWithActivities.push(spanElem.textContent));
-
-  doForEach(courseListNameLinks, aElem => {
-    const children = aElem.childNodes;
-    let courseName = '';
-    for (let i = 0; i < children.length; i++) {
-      if (children[i].nodeType === 3) {
-        courseName = children[i].wholeText.trim();
+  function doForEach(items, f) {
+    if (items && f) {
+      for (let i = 0; i < items.length; i++) {
+        f(items[i]);
       }
     }
-
-    if (courseWithActivities.indexOf(courseName) >= 0) {
-      aElem.style.fontWeight = 'bold';
-    }
-  })
-
-}
-
-function formatTime(date) {
-  const twoDigits = (n) => n < 10 ? '0' + n : n;
-  return twoDigits(date.getHours()) + ':' + twoDigits(date.getMinutes());
-}
-
-function fetchSchedule(config) {
-  const localStorage = window.localStorage;
-  const lastUpdate = localStorage.getItem('pro_schedule_date');
-  const cached = localStorage.getItem('pro_schedule');
-  if (cached && new Date().getTime() - new Date(lastUpdate).getTime() < 518400000) {
-    return new Promise((resolve, reject) => {
-      resolve(JSON.parse(cached));
-    });
-  } else {
-    return fetch(`https://soulsbros.ch/proxy/schedule.php?studyPlan=${config.studyPlan}&semester=${config.semester}&studyYear=${config.studyYear}`)
-      .then(res => res.json())
-      .then(res => res.data)
-      .then(data => {
-        localStorage.setItem('pro_schedule_date', new Date().toString());
-        localStorage.setItem('pro_schedule', JSON.stringify(data));
-        return data;
-      });
   }
-}
 
-function getSchedule(config, date, allOfDay) {
-  return fetchSchedule(config)
+  function removeFooter() {
+    doForEach(document.getElementsByTagName('footer'), x => x.outerHTML = '');
+  }
+
+  function removeNews() {
+    const newsDiv = document.getElementById('messagesbyinstitution');
+    if (newsDiv) {
+      newsDiv.outerHTML = '';
+    }
+  }
+
+  function properLogo(config) {
+    doForEach(document.getElementsByClassName('logo'), x => x.src = `${config.repo}/raw/main/logo.svg`);
+    doForEach(document.getElementsByClassName('site-name'), x => x.innerHTML = '<span>iCorsi3<sup>pro</sup><span>');
+  }
+
+  function boldTitles() {
+    const courseListNameLinks = document.querySelectorAll('.coursename');
+    const activitiesNameSpans = document.querySelectorAll('[data-region="event-list-content"] div div [data-region="paged-content-page"] div div div div .text-muted');
+
+    const courseWithActivities = [];
+    doForEach(activitiesNameSpans, spanElem => courseWithActivities.push(spanElem.textContent));
+
+    doForEach(courseListNameLinks, aElem => {
+      const children = aElem.childNodes;
+      let courseName = '';
+      for (let i = 0; i < children.length; i++) {
+        if (children[i].nodeType === 3) {
+          courseName = children[i].wholeText.trim();
+        }
+      }
+
+      if (courseWithActivities.indexOf(courseName) >= 0) {
+        aElem.style.fontWeight = 'bold';
+      }
+    })
+
+  }
+
+  function formatTime(date) {
+    const twoDigits = (n) => n < 10 ? '0' + n : n;
+    return twoDigits(date.getHours()) + ':' + twoDigits(date.getMinutes());
+  }
+
+  function fetchSchedule(config) {
+    const localStorage = window.localStorage;
+    const lastUpdate = localStorage.getItem('pro_schedule_date');
+    const cached = localStorage.getItem('pro_schedule');
+    if (cached && new Date().getTime() - new Date(lastUpdate).getTime() < 518400000) {
+      return new Promise((resolve, reject) => {
+        resolve(JSON.parse(cached));
+      });
+    } else {
+      return fetch(`https://soulsbros.ch/proxy/schedule.php?studyPlan=${config.studyPlan}&semester=${config.semester}&studyYear=${config.studyYear}`)
+        .then(res => res.json())
+        .then(res => res.data)
+        .then(data => {
+          localStorage.setItem('pro_schedule_date', new Date().toString());
+          localStorage.setItem('pro_schedule', JSON.stringify(data));
+          return data;
+        });
+    }
+  }
+
+  function getSchedule(config, date, allOfDay) {
+    return fetchSchedule(config)
       .then(courses => courses.filter(course => {
         const when = new Date(course.end);
         const sameDay = when.getFullYear() === date.getFullYear()
-              && when.getMonth() === date.getMonth()
-              && when.getDate() === date.getDate();
+          && when.getMonth() === date.getMonth()
+          && when.getDate() === date.getDate();
         if (allOfDay) {
           // all courses of given date
           return sameDay;
@@ -113,116 +113,115 @@ function getSchedule(config, date, allOfDay) {
         };
         return { name, lecturers, location, time };
       })
-      .sort((a, b) => a.time.end.getTime() - b.time.end.getTime()));
-}
+        .sort((a, b) => a.time.end.getTime() - b.time.end.getTime()));
+  }
 
-function injectUsiSchedule(config, date) {
-  const now = new Date();
-  const diff = (now - date) + ((date.getTimezoneOffset() - now.getTimezoneOffset()) * 60 * 1000);
-  const isToday = Math.floor(diff / 86400000) === 0;
+  function injectUsiSchedule(config, date) {
+    const now = new Date();
+    const diff = (now - date) + ((date.getTimezoneOffset() - now.getTimezoneOffset()) * 60 * 1000);
+    const isToday = Math.floor(diff / 86400000) === 0;
 
-  // Fetch schedule through the API wrapper to bypass CORS
-  getSchedule(config, date, !isToday)
-    .then(data => doForEach(document.getElementsByClassName('fpstartwrap'), x => {
-      const table = document.createElement('div');
-      table.className = 'my-schedule-table';
-      if (data.length === 0) {
-        table.innerHTML = '<p>All done for today!</p>';
-      } else {
-        data.forEach((it, i) => {
-          const column = document.createElement('div');
-          column.className = 'my-schedule-column';
-          const title = document.createElement('h4');
-          title.innerText = `${i + 1}: ${it.name}`;
-          column.appendChild(title);
-          const info = document.createElement('div');
-          info.innerHTML = `<p>${it.lecturers}<br>
-                            <b>${it.location}</b>\t
-                            From ${formatTime(it.time.start)}
-                            to ${formatTime(it.time.end)}</p>`;
-          column.appendChild(info);
-          table.appendChild(column);
-        });
-      }
-      // Insert header contents
-      x.innerHTML = `
-        <div style="display: flex; justify-content: space-between;">
-          <button id="pro_schedule_previous" class="btn btn-secondary">&lt;</button>
-          <h3 id="pro_schedule_title" style="text-align: center"></h3>
-          <button id="pro_schedule_next" class="btn btn-secondary">&gt;</button>
-        </div>`;
-      const scheduleTitle = document.getElementById('pro_schedule_title');
-      scheduleTitle.innerText = isToday
-        ? 'Schedule for today'
-        : `Schedule for ${date.toISOString().split('T')[0]}`;
-      // Inject schedule
-      x.appendChild(table);
+    const injectionSite = document.getElementById('dashboard-icons');
+    injectionSite.innerHTML = '';
 
-      // Buttons
-      const nextDay = document.getElementById('pro_schedule_next');
-      nextDay.onclick = (e) => {
-        e.preventDefault();
-        injectUsiSchedule(config, new Date(date.getTime() + 1000 * 60 * 60 * 24));
-      };
-      const previousDay = document.getElementById('pro_schedule_previous');
-      previousDay.onclick = (e) => {
-        e.preventDefault();
-        injectUsiSchedule(config, new Date(date.getTime() - 1000 * 60 * 60 * 24));
-      };
-    }));
-}
+    // Fetch schedule through the API wrapper to bypass CORS
+    getSchedule(config, date, !isToday)
+      .then(data => {
+        const table = document.createElement('div');
+        table.className = 'my-schedule-table';
+        if (data.length === 0) {
+          table.innerHTML = '<p>All done for today!</p>';
+        } else {
+          data.forEach((it, i) => {
+            const column = document.createElement('div');
+            column.className = 'my-schedule-column';
+            const title = document.createElement('h4');
+            title.innerText = `${i + 1}: ${it.name}`;
+            column.appendChild(title);
+            const info = document.createElement('div');
+            info.innerHTML = `<p>${it.lecturers}<br>
+                              <b>${it.location}</b>\t
+                              From ${formatTime(it.time.start)}
+                              to ${formatTime(it.time.end)}</p>`;
+            column.appendChild(info);
+            table.appendChild(column);
+          });
+        }
+        // Insert header contents
+        injectionSite.innerHTML = `
+          <div style="display: flex; justify-content: space-between;">
+            <button id="pro_schedule_previous" class="btn btn-secondary">&lt;</button>
+            <h3 id="pro_schedule_title" style="text-align: center"></h3>
+            <button id="pro_schedule_next" class="btn btn-secondary">&gt;</button>
+          </div>`;
+        const scheduleTitle = document.getElementById('pro_schedule_title');
+        scheduleTitle.innerText = isToday
+          ? 'Schedule for today'
+          : `Schedule for ${date.toISOString().split('T')[0]}`;
+        // Inject schedule
+        injectionSite.appendChild(table);
 
-function checkUpdates() {
-  const repoShort = `${config.repo.split("/")[3]}/${config.repo.split("/")[4]}`;
+        // Buttons
+        const nextDay = document.getElementById('pro_schedule_next');
+        nextDay.onclick = (e) => {
+          e.preventDefault();
+          injectUsiSchedule(config, new Date(date.getTime() + 1000 * 60 * 60 * 24));
+        };
+        const previousDay = document.getElementById('pro_schedule_previous');
+        previousDay.onclick = (e) => {
+          e.preventDefault();
+          injectUsiSchedule(config, new Date(date.getTime() - 1000 * 60 * 60 * 24));
+        };
+      });
+  }
 
-  fetch(`https://api.github.com/repos/${repoShort}/releases`)
-    .then(res => res.json())
-    .then(res => {
-      const latestVersion = res[0].tag_name;
-      console.log(`current: ${config.currentVersion} - latest: ${latestVersion}`)
+  function checkUpdates() {
+    const repoShort = `${config.repo.split("/")[3]}/${config.repo.split("/")[4]}`;
 
-      if (config.currentVersion != latestVersion) {
-        document.getElementById("user-notifications").innerHTML = 
-          `New version available (${latestVersion}), visit <a href='${config.repo}'>${config.repo}</a> to download it!`;
-      }
-    })
-}
+    fetch(`https://api.github.com/repos/${repoShort}/releases`)
+      .then(res => res.json())
+      .then(res => {
+        const latestVersion = res[0].tag_name;
+        console.log(`current: ${config.currentVersion} - latest: ${latestVersion}`)
+        if (config.currentVersion != latestVersion) {
+          document.getElementById("user-notifications").innerHTML =
+            `New version available (${latestVersion}), visit <a href='${config.repo}'>${config.repo}</a> to download it!`;
+        }
+      })
+  }
 
-window.onload = () => {
-  properLogo(config);
-  removeFooter();
-  removeNews();
-  injectUsiSchedule(config, new Date());
-  checkUpdates();
-  
-  setTimeout(() => {
-  // Incoming activities are loaded asynchronously
-  boldTitles();
-  }, 1000);
-};
+  window.onload = () => {
+    properLogo(config);
+    removeFooter();
+    removeNews();
+    injectUsiSchedule(config, new Date());
+    checkUpdates();
+
+    setTimeout(() => {
+      // Incoming activities are loaded asynchronously
+      boldTitles();
+    }, 1000);
+  };
 </script>
 
 <style>
-.my-schedule-table {
-  display: flex;
-  flex-flow: row wrap;
-  gap: 12px;
-}
+  .my-schedule-table {
+    display: flex;
+    flex-flow: row wrap;
+    gap: 12px;
+    padding: 4px 8px;
+  }
 
-.my-schedule-table .my-schedule-column {
-  display: flex;
-  flex-basis: 100%;
-  flex-flow: column nowrap;
-  padding: 4px;
-}
+  .my-schedule-table .my-schedule-column {
+    display: flex;
+    flex-basis: 100%;
+    flex-flow: column nowrap;
+    padding: 4px;
+  }
 
-::-webkit-scrollbar {
-  background-color: transparent;
-}
-::-webkit-scrollbar-track {
-  background-color: transparent;
-}
-::-webkit-scrollbar-track-piece {
-  background-color: transparent;
-}
+  #dashboard-icons {
+    border: 1px solid rgba(0, 0, 0, .125);
+    border-radius: 0.5rem;
+    padding: 8px;
+  }
 </style>
